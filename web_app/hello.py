@@ -15,7 +15,7 @@ app.jinja_loader = my_loader
 
 @app.route("/visualization_1")
 def visualizations():
-    data = pd.read_csv('titanic/train.csv')
+    data = pd.read_csv('web_app/titanic/train.csv')
     x = data['Age']
     y = data['Fare']
     fig, ax = plt.subplots()
@@ -26,11 +26,11 @@ def visualizations():
     img.seek(0)
     return send_file(img, mimetype='image/png')
 
-@app.route("/")
+@app.route("/dash")
 def index():
     return render_template("page.html")
 
-@app.route("/home")
+@app.route("/")
 def homepage():
     return render_template("homepage.html")
 
