@@ -30,5 +30,9 @@ def visualizations():
 def index():
     return render_template("page.html")
 
+@app.route("/home")
+def homepage():
+    return render_template("homepage.html")
+
 if __name__ == "__main__":
     app.run()
