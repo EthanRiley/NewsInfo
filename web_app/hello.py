@@ -27,7 +27,7 @@ def visualizations():
     return send_file(img, mimetype='image/png')
 
 @app.route("/dash")
-def index():
+def dash():
     return render_template("page.html")
 
 @app.route("/")
@@ -35,4 +35,4 @@ def homepage():
     return render_template("homepage.html")
 
 if __name__ == "__main__":
-    app.run()
+    app.run(threaded=True)
