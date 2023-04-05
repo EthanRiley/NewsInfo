@@ -1,30 +1,40 @@
-from flask import Flask, render_template, send_file
-import matplotlib.pyplot as plt
-import io
+import dash
+import dash_core_components as dcc
+import dash_html_components as html
+from flask import Flask, render_template
 import pandas as pd
-from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import jinja2
 
+# Initialize the Flask app
 app = Flask(__name__)
-my_loader = jinja2.ChoiceLoader([
-    app.jinja_loader,
-    jinja2.FileSystemLoader('templates'),
+
+# Initialize the Dash app with the Flask app as its server
+dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash')
+
+# Load the data
+data = pd.read_csv('web_app/titanic/train.csv')
+x = data['Age']
+y = data['Fare']
+
+# Create a scatter plot using Plotly
+scatter_plot = {
+    'data': [{
+        'x': x,
+        'y': y,
+        'mode': 'markers',
+        'marker': {'color': 'rgba(0, 0, 255, 0.5)'}
+    }],
+    'layout': {
+        'title': 'Scatter Plot of Age vs Fare',
+        'xaxis': {'title': 'Age'},
+        'yaxis': {'title': 'Fare'}
+    }
+}
+
+# Define the Dash app layout
+dash_app.layout = html.Div([
+    html.H1('Scatter Plot: Age vs Fare'),
+    dcc.Graph(id='scatter-plot', figure=scatter_plot)
 ])
-app.jinja_loader = my_loader
-
-
-@app.route("/visualization_1")
-def visualizations():
-    data = pd.read_csv('web_app/titanic/train.csv')
-    x = data['Age']
-    y = data['Fare']
-    fig, ax = plt.subplots()
-    ax.scatter(x, y)
-    img = io.BytesIO()
-    canvas = FigureCanvas(fig)
-    fig.savefig(img, format='png')
-    img.seek(0)
-    return send_file(img, mimetype='image/png')
 
 @app.route("/dash")
 def dash():
