@@ -5,3 +5,14 @@ body {
   justify-content: center;
   height: 100vh;
 }
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  padding: 20px; /* Adjust the padding to control the size of the grey box */
+  background-color: #808080; /* Set the background color of the grey box */
+  box-sizing: border-box;
+}
