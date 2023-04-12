@@ -15,6 +15,11 @@ for file in files:
         reader = csv.DictReader(csvfile)
         for row in reader:
             row['_id'] = int(row['id'])
+            if row['year'] != '':
+                row['year'] = int(float(row['year']))
+                row['month'] = int(float(row['month']))
+                row['last_name'] = row['authors'].split(' ')[-1]
+                row['first_name'] = row['authors'].split(' ')[0]
             del row['id']
             del row['']
             articles.insert_one(row)
