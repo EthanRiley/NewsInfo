@@ -5,12 +5,13 @@ import dash_core_components as dcc
 import dash_html_components as html
 from flask import Flask, render_template
 import pandas as pd
+from templates.single_article import create_dashboard_component
  
 # Initialize the Flask app
 app = Flask(__name__)
 
 # Initialize the Dash app with the Flask app as its server
-#dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
+dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
 
 # Load the data
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/testNewsInfo'
@@ -31,7 +32,9 @@ def articles():
     # Convert the MongoDB cursor to a list of dictionaries
     return articles
 
-@app.route("/articles/<string:article_id>")
+dash_app.layout = create_dashboard_component(articles())
+
+@app.route("/articles/single/<string:article_id>")
 def get_article(article_id):
     article = mongo.db.articles.find_one({"_id": int(article_id)})
     # Convert the MongoDB cursor to a list of dictionaries
