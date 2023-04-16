@@ -10,19 +10,6 @@ import matplotlib.pyplot as plt
 import base64
 import io
 
-def create_word_cloud_image(article_text):
-    wordcloud = WordCloud(background_color='white', width=800, height=400).generate(article_text)
-
-    # Convert the generated word cloud to an image
-    buffer = io.BytesIO()
-    plt.imshow(wordcloud, interpolation='bilinear')
-    plt.axis("off")
-    plt.savefig(buffer, format="png")
-    buffer.seek(0)
-    image_data = base64.b64encode(buffer.getvalue()).decode()
-
-    return f'data:image/png;base64,{image_data}'
-
 def create_dashboard_component(article):
     word_count_df = run_article_analysis(article)
     word_cloud_image = create_word_cloud_image(article["content"])
@@ -90,3 +77,16 @@ def run_article_analysis(article):
     # Sort the dataframe by the count column
     df = df.sort_values(by='count', ascending=False)
     return df
+
+def create_word_cloud_image(article_text):
+    wordcloud = WordCloud(background_color='white', width=800, height=400).generate(article_text)
+
+    # Convert the generated word cloud to an image
+    buffer = io.BytesIO()
+    plt.imshow(wordcloud, interpolation='bilinear')
+    plt.axis("off")
+    plt.savefig(buffer, format="png")
+    buffer.seek(0)
+    image_data = base64.b64encode(buffer.getvalue()).decode()
+
+    return f'data:image/png;base64,{image_data}'
