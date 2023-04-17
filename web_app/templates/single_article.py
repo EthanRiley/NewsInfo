@@ -19,6 +19,14 @@ def create_dashboard_component(article):
                 children=[
                     html.Div(
                         children=[
+                            dcc.Dropdown(
+                                id="article-selector",
+                                options=[],
+                                style={
+                                    "color": "black",
+                                    "align": "left",
+                                    "width": "75%",
+                                }),
                             html.H1(f"{article['title']}"),
                             html.P(f"Author: {article['author']}"),
                             html.P(f"Publication: {article['publication']}"),
@@ -30,7 +38,9 @@ def create_dashboard_component(article):
                     ),
                     html.Div(
                         children=[
-                            html.Img(src=word_cloud_image)
+                            html.Img(
+                                id="word-cloud-image",
+                                src=word_cloud_image)
                         ],
                         style={
                             "width": "40%",
