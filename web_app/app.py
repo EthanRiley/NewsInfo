@@ -6,15 +6,19 @@ import dash_html_components as html
 from flask import Flask, render_template
 import pandas as pd
 from templates.single_article import create_dashboard_component, run_article_analysis, create_word_cloud_image
+from templates.article_aggregation import create_agg_dashboard_component, run_multi_article_analysis
 from dash.dependencies import Input, Output
 import requests
 import plotly.express as px
  
-# Initialize the Flask app
+# Initialize the Flask app idk why this wpnt let mepush
 app = Flask(__name__)
 
 # Initialize the Dash app with the Flask app as its server
 dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
+
+# Initialize another Dash app with the flask app as its server
+dash_app_agg = dash.Dash(__name__, server=app, url_base_pathname='/dashagg/')
 
 # Load the data
 app.config['MONGO_URI'] = 'mongodb://localhost:27017/testNewsInfo'
@@ -95,7 +99,20 @@ def get_article_author(author):
     
     return jsonify(article_list)
 
+@app.route("/articles/query/default")
+def get_default_multi():
+    articles = mongo.db.articles.find({"publication": "New York Times"})
+    article_list = [article for article in articles]
+    
+    for article in article_list:
+        # Convert ObjectId to string to make it JSON serializable
+        article['_id'] = str(article['_id'])
+
+    return jsonify(article_list)
+
 dash_app.layout = create_dashboard_component(article_one())
+with app.app_context():
+    dash_app_agg.layout = create_agg_dashboard_component(get_default_multi().json)
 
 @dash_app.callback(
     Output("article-selector", "options"),
