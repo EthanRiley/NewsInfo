@@ -10,7 +10,8 @@ from templates.article_aggregation import create_agg_dashboard_component, run_mu
 from dash.dependencies import Input, Output
 import requests
 import plotly.express as px
- 
+from bson.objectid import ObjectId
+
 # Initialize the Flask app idk why this wpnt let mepush
 app = Flask(__name__)
 
@@ -21,7 +22,7 @@ dash_app = dash.Dash(__name__, server=app, url_base_pathname='/dash/')
 dash_app_agg = dash.Dash(__name__, server=app, url_base_pathname='/dashagg/')
 
 # Load the data
-app.config['MONGO_URI'] = 'mongodb://localhost:27017/testNewsInfo'
+app.config['MONGO_URI'] = 'mongodb://localhost:27017/NewsInfo'
 mongo = PyMongo(app)
 
 
@@ -54,16 +55,16 @@ def articlenames():
 
 @app.route("/articles/one")
 def article_one():
-    articles = mongo.db.articles.find_one({"_id": 17283})
-    # Convert the MongoDB cursor to a list of dictionaries
-    return articles
+    article = mongo.db.articles.find_one({"author": "Carl Hulse"})
+    article["_id"] = str(article["_id"])
+    return article
 
 
 
 @app.route("/articles/single/<string:article_id>")
 def get_article(article_id):
-    article = mongo.db.articles.find_one({"_id": int(article_id)})
-    # Convert the MongoDB cursor to a list of dictionaries
+    article = mongo.db.articles.find_one({"_id": ObjectId(article_id)})
+    article["_id"] = str(article["_id"])
     return article
 
 @app.route("/articles/query/<string:year>")
@@ -88,9 +89,11 @@ def get_article_year_month(year, month):
     
     return jsonify(article_list)
 
-@app.route("/articles/query/<string:author>")
+@app.route("/articles/query/author/<string:author>")
 def get_article_author(author):
-    articles = mongo.db.articles.find({"authors": author})
+    author = author.replace("%20", " ")
+    print(author)
+    articles = mongo.db.articles.find({"author": author})
     article_list = [article for article in articles]
     
     for article in article_list:

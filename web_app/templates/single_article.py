@@ -79,7 +79,7 @@ def create_dashboard_component(article):
 
 def run_article_analysis(article):
     # Create a dataframe from the article where on column is the word and the other is the count
-    df = pd.DataFrame.from_dict(Counter(article['content'].split()), orient='index').reset_index()
+    df = pd.DataFrame.from_dict(article["word_counts"], orient='index').reset_index()
 
     # Rename the columns
     df.columns = ['word', 'count']
