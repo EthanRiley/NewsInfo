@@ -1,0 +1,1 @@
+Houses temporary files from article analysis

@@ -9,10 +9,12 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import base64
 import io
+import matplotlib
+matplotlib.use('agg')
 
 def create_dashboard_component(article):
     word_count_df = run_article_analysis(article)
-    word_cloud_image = create_word_cloud_image(article["content"])
+    word_cloud_image = create_word_cloud_image(word_count_df["word"])
     layout = html.Div(
         children=[
             html.Div(
@@ -27,12 +29,16 @@ def create_dashboard_component(article):
                                     "align": "left",
                                     "width": "75%",
                                 }),
-                            html.H1(
+                            html.H1(f"{article['title']}",
                                 id="article-title"),
-                            html.P(
-                                id="article-athor"),
-                            html.P(
+                            html.P(f"Author: {article['author']}",
+                                id="article-author"),
+                            html.P(f"Publication: {article['publication']}",
                                 id='article-publication'),
+                            html.P(f"Date: {article['date']}",
+                                id='article-date'),
+                            html.P(f"URL: {'N/A' if article['url'] == '' else article['url']}",
+                                id='article-url')
                         ],
                         style={
                             "width": "50%",
@@ -64,7 +70,7 @@ def create_dashboard_component(article):
                 children=[
                     dcc.Graph(
                         id="example-graph",
-                        figure=px.bar(x=word_count_df['word'], y=word_count_df['count'], labels={"x": "X", "y": "Y"}),
+                        figure=px.bar(x=word_count_df['word'], y=word_count_df['count'], labels={"x": "Count", "y": "Words"}),
                         style={"width": "90%", "height": "100%"}
                     ),
                 ],
@@ -88,10 +94,13 @@ def run_article_analysis(article):
     df.columns = ['word', 'count']
 
     # Sort the dataframe by the count column
+    df = df[df["count"] > 1]
     df = df.sort_values(by='count', ascending=False)
     return df
 
 def create_word_cloud_image(article_text):
+    article_text = " ".join(article_text)
+    #print(article_text[:100])
     wordcloud = WordCloud(background_color='white', width=800, height=400).generate(article_text)
 
     # Convert the generated word cloud to an image
@@ -99,6 +108,7 @@ def create_word_cloud_image(article_text):
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis("off")
     plt.savefig(buffer, format="png")
+    plt.close()
     buffer.seek(0)
     image_data = base64.b64encode(buffer.getvalue()).decode()
 

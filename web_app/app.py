@@ -120,17 +120,15 @@ with app.app_context():
 @dash_app.callback(
     Output("article-selector", "options"),
     Output("article-selector", "value"),
-    Input("article-selector", "search_value"))
+    Input("article-selector", "search-value"))
 def update_article_options(search_value):
     if search_value is None:
-        
-        search_value = ''
+       search_value = ''
 
     response = requests.get(f"http://127.0.0.1:5000/articles")
-    
     articles = response.json()
     # Filter the article_names based on the search_value
-    filtered_article_names = [{"label": article['title'], "value":article['_id']} for article in articles if search_value.lower() in article['title'].lower()]
+    filtered_article_names = [{"label": article['title'], "value":str(article['_id'])} for article in articles if search_value.lower() in article['title'].lower()]
 
     # Create options for the dropdown menu using the fetched article data
     #options = [{"label": name, "value": idx} for idx, name in enumerate(filtered_article_names)]
@@ -144,8 +142,10 @@ def update_article_options(search_value):
     Output("example-graph", "figure"),
     Output("word-cloud-image", "src"),
     Output("article-title", "children"),
-    Output("article-athor", "children"),
+    Output("article-author", "children"),
     Output("article-publication", "children"),
+    Output("article-date", "children"),
+    Output("article-url", "children"),
     Input("article-selector", "value"),
 )
 def update_content(selected_article_index):
@@ -154,17 +154,16 @@ def update_content(selected_article_index):
 
     response = requests.get(f"http://127.0.0.1:5000/articles/single/{selected_article_index}")
     article = response.json()
-
     word_count_df = run_article_analysis(article)
-    word_cloud_image = create_word_cloud_image(article["content"])
+    word_cloud_image = create_word_cloud_image(word_count_df["word"])
 
     updated_graph = px.bar(
         x=word_count_df["word"],
         y=word_count_df["count"],
-        labels={"x": "X", "y": "Y"},
+        labels={"x": "Word", "y": "Count"},
     )
-
-    return updated_graph, word_cloud_image, article["title"], article["author"], article["publication"]
+    url = 'N/A' if article['url'] == '' else article['url']
+    return updated_graph, word_cloud_image, article["title"], article["author"], article["publication"], article["date"], url
 
 if __name__ == "__main__":
     app.run(threaded=True)

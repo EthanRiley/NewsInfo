@@ -13,7 +13,6 @@ from templates.single_article import create_word_cloud_image
 import plotly.graph_objs as go
 
 def create_agg_dashboard_component(articles):
-    print("articles", articles)
     all_articles = " ".join([article['content'] for article in articles])
     word_count_df = run_multi_article_analysis(all_articles)
     word_cloud_image = create_word_cloud_image(all_articles)
