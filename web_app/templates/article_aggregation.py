@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import base64
 import io
 from templates.single_article import create_word_cloud_image
+import plotly.graph_objs as go
 
 def create_agg_dashboard_component(articles):
     print("articles", articles)
@@ -72,12 +73,46 @@ def create_agg_dashboard_component(articles):
                         },
                     ),
                     html.Div(
-                        children=[],
-                        style={
-                            "width": "100%",
-                            "color": "white"  # Set the text color to white
-                        },
+        children=[
+                    dcc.Graph(
+                        id="polarity-pie",
+                        figure=go.Figure(
+                            data=[go.Pie(
+                                labels=["Positive", "Negative"],
+                                values=[50, 50],
+                                marker=dict(colors=["blue", "red"]),
+                                hole=0.4
+                            )],
+                            layout=go.Layout(
+                                autosize=True,
+                            )
+                        ),
+                        style={"flex": "1", "height": "100%"}
                     ),
+                    dcc.Graph(
+                        id="subjectivity-pie",
+                        figure=go.Figure(
+                            data=[go.Pie(
+                                labels=["Subjective", "Objective"],
+                                values=[50, 50],
+                                marker=dict(colors=["blue", "red"]),
+                                hole=0.4
+                            )],
+                            layout=go.Layout(
+                                autosize=True,
+                            )
+                        ),
+                        style={"flex": "1", "height": "100%"}
+                    ),
+                            ],
+                style={
+                    "width": "100%",
+                    "color": "white",  # Set the text color to white
+                    "display": "flex",
+                    "justifyContent": "space-evenly",
+                    "alignItems": "center",
+                },
+            ),
                 ],
                 style={
                     "display": "flex",

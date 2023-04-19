@@ -140,15 +140,17 @@ def update_article_options(search_value):
 @dash_app.callback(
     Output("example-graph", "figure"),
     Output("word-cloud-image", "src"),
+    Output("article-title", "children"),
+    Output("article-athor", "children"),
+    Output("article-publication", "children"),
     Input("article-selector", "value"),
 )
 def update_content(selected_article_index):
     if selected_article_index is None:
-        return dash.no_update, dash.no_update
+        return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
 
     response = requests.get(f"http://127.0.0.1:5000/articles/single/{selected_article_index}")
     article = response.json()
-    
 
     word_count_df = run_article_analysis(article)
     word_cloud_image = create_word_cloud_image(article["content"])
@@ -159,7 +161,7 @@ def update_content(selected_article_index):
         labels={"x": "X", "y": "Y"},
     )
 
-    return updated_graph, word_cloud_image
+    return updated_graph, word_cloud_image, article["title"], article["author"], article["publication"]
 
 if __name__ == "__main__":
     app.run(threaded=True)

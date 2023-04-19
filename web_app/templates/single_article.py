@@ -27,9 +27,12 @@ def create_dashboard_component(article):
                                     "align": "left",
                                     "width": "75%",
                                 }),
-                            html.H1(f"{article['title']}"),
-                            html.P(f"Author: {article['author']}"),
-                            html.P(f"Publication: {article['publication']}"),
+                            html.H1(
+                                id="article-title"),
+                            html.P(
+                                id="article-athor"),
+                            html.P(
+                                id='article-publication'),
                         ],
                         style={
                             "width": "50%",
