@@ -121,7 +121,7 @@ dash_app.layout = create_dashboard_component(article_one())
 with app.app_context():
     dash_app_agg.layout = create_agg_dashboard_component(article_full().json)
 
-# Callback for updating search options
+# Callback for updating search dashboard article options
 @dash_app.callback(
     Output("article-selector", "options"),
     Output("article-selector", "value"),
@@ -136,9 +136,9 @@ def update_article_options(search_value):
     filtered_article_names = [{"label": article['title'], "value":str(article['_id'])} for article in articles if search_value.lower() in article['title'].lower()]
     # Set the default selected value to the first option in the list
     default_value = filtered_article_names[0]["value"] if filtered_article_names else None
-
     return filtered_article_names, default_value
 
+# Callback for updating search dashboard elements on new article selection
 @dash_app.callback(
     Output("example-graph", "figure"),
     Output("word-cloud-image", "src"),
@@ -154,35 +154,38 @@ def update_article_options(search_value):
 def update_content(selected_article_index):
     if selected_article_index is None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
-
+    # Get selected article
     response = requests.get(f"http://127.0.0.1:5000/articles/single/{selected_article_index}")
     article = response.json()
+    # Create word count dataframe from article
     word_count_df = run_article_analysis(article)
+    # Create word cloud
     word_cloud_image = create_word_cloud_image(word_count_df.set_index("word").to_dict()["count"])
-
+    # Create word count graph
     updated_graph = px.bar(
         x=word_count_df["word"],
         y=word_count_df["count"],
         labels={"x": "Word", "y": "Count"},
     )
+    # Check if article URL exists
     url = 'N/a' if article['url'] == '' else article['url']
+    # Determine polarity and subjectivity category
     polarity = f"Polarity: {'Positive' if article['polarity'] > 0.01 else 'Negative' if article['polarity'] < -0.01 else 'Neutral'}"
     subjectivity = f"Subjectivity: {'Subjective' if article['subjectivity'] > 0.55 else 'Objective' if article['subjectivity'] < 0.45 else 'Neutral'}"
     return updated_graph, word_cloud_image, article["title"], \
         f"Author: {article['author']}", f"Publication: {article['publication']}", \
         f"Date: {article['date']}", f"URL: {url}", polarity, subjectivity
 
-# Define a function to fetch data from the server
+# Fetch data using routes
 def fetch_data():
     publications = requests.get("http://127.0.0.1:5000/publications").json()
     authors = requests.get("http://127.0.0.1:5000/authors").json()
     months = requests.get("http://127.0.0.1:5000/months").json()
     years = requests.get("http://127.0.0.1:5000/years").json()
-
     return publications, authors, months, years
 
 
-# Callback to populate the dropdowns
+# Callback for updating query dashboard filter options
 @dash_app_agg.callback(
     Output("publication-dropdown", "options"),
     Output("author-dropdown", "options"),
@@ -196,27 +199,26 @@ def fetch_data():
 def update_dropdown_options(pub_search_value, auth_search_value, month_search_value, year_search_value):
     if not any([pub_search_value, auth_search_value, month_search_value, year_search_value]):
         pub_search_value = auth_search_value = month_search_value = year_search_value = ''
-
+    # Fetch selection data
     publications, authors, months, years = fetch_data()
-
+    # Update selection options
     publication_options = [{"label": pub, "value": pub} for pub in publications if pub_search_value.lower() in pub.lower()]
     author_options = [{"label": author, "value": author} for author in authors if auth_search_value.lower() in author.lower()]
     month_options = [{"label": month, "value": month} for month in months if month_search_value.lower() in str(month)]
     year_options = [{"label": year, "value": year} for year in years if year_search_value.lower() in str(year)]
-
     return publication_options, author_options, month_options, year_options
 
+# Query database for articles based on field values
 def generate_query(publication, author, month, year):
+    # Create dictionary of fields and value
     query = {"publication": publication, "author": author, "month": month, "year": year}
+    # Remove empty values
     query = {key: value for key, value in query.items() if value != None}
-    articles = mongo.db.articles.find(query)
-    article_list = [article for article in articles]
-    #for article in article_list:
-        # Convert ObjectId to string to make it JSON serializable
-      #  article['_id'] = str(article['_id'])
-    
+    # Query database and convert to list of dictionaries
+    article_list = [article for article in mongo.db.articles.find(query)]
     return article_list
 
+# Callback for updating query dashboard elements on request
 @dash_app_agg.callback(
     Output("example-graph", "figure"),
     Output("word-cloud-image", "src"),
@@ -233,23 +235,27 @@ def generate_query(publication, author, month, year):
 def update_graphs_and_wordcloud(n_clicks, publication, author, month, year):
     if n_clicks is None:
         return dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update, dash.no_update
+    # Query the database
     article_list = generate_query(publication, author, month, year)
+    # Show an error message if there are no articles in the selection
     if len(article_list) == 0:
         return dash.no_update, dash.no_update, "No articles in selection, try again.", \
             {"color": "red", "margin-left": "10%"}, dash.no_update, dash.no_update
+    # Create word count dataframe from articles
     word_count_df = run_multi_article_analysis(article_list)
+    # Create word cloud
     word_cloud_image = create_word_cloud_image(word_count_df.set_index("word").to_dict()["count"])
-
+    # Create word count graph
     updated_graph = px.bar(
         x=word_count_df["word"],
         y=word_count_df["count"],
         labels={"x": "Word", "y": "Count"},
     )
+    # Create query message
     if len(article_list) == 1:
         msg = "There is 1 article in the query."
     else:
         msg = f"There are {len(article_list)} articles in the query."
-
     return updated_graph, word_cloud_image, msg, \
         {"color": "white", "margin-left": "10%"}, \
         graph_pie(article_list, ["Positive", "Neutral", "Negative"], "polarity", -0.01, 0.01), \
