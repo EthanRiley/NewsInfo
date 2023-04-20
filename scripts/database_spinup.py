@@ -35,7 +35,7 @@ def insert_mongo(files):
                 # Check that article contains all required values
                 insert=True
                 for col in columns[:7]:
-                    if row["col"] == None:
+                    if row[col] == None:
                         insert=False
                 # Insert article to database
                 if insert:
