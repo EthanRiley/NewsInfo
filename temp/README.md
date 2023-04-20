@@ -1,1 +1,1 @@
-Houses temporary files from article analysis
+Houses temporary files from spark article analysis
