@@ -35,7 +35,7 @@ def insert_mongo(files):
                 # Check that article contains all required values
                 insert=True
                 for col in columns[:7]:
-                    if row["col"] == None:
+                    if row[col] == None:
                         insert=False
                 # Insert article to database
                 if insert:
@@ -65,9 +65,9 @@ def add_to_mongo():
 
 if __name__ == "__main__":
     # Load all articles from dataset
-    files = ['data/articles1.csv', 'data/articles2.csv', 'data/articles3.csv']
+    #files = ['data/articles1.csv', 'data/articles2.csv', 'data/articles3.csv']
     # Load an a sample of articles, recommended and sufficient for project viewing to avoid extra system setup for large data analysis in spark
-    #files = ["data/articles_sample.csv"]
+    files = ["data/articles_sample.csv"]
     # Load articles from files into mongo
     insert_mongo(files)
     # Analayze articles in spark
